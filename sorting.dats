@@ -1,49 +1,193 @@
-#include "prelude/HATS/prelude_dats.hats"
-#include "prelude/HATS/prelude_JS_dats.hats"
-fun quicksort (xs: list0(nint)): list0(nint) =
-  case+ xs of
-  | list0_nil() => list0_nil()
-  | list0_cons(pivot, rest) => 
+(* ****** ****** *)
+(*
+HX-2026-05-14:
+Merge Sort on FnList
+*)
+
+#extern
+fun
+list_mergesort
+(xs: list(sint)): list(sint)
+
+#implfun
+list_mergesort(xs) =
+(
+case+ xs of
+| list_nil() => list_nil()
+| list_cons(x, list_nil()) => list_cons(x, list_nil())
+| list_cons(_, _) =>
+  let
+    val (xs1, xs2) = list_split(xs)
+  in
+    list_merge(list_mergesort(xs1), list_mergesort(xs2))
+  end
+) where
+{
+  fun list_split(xs: list(sint)): (list(sint), list(sint)) =
+  (
+    case+ xs of
+    | list_nil() => (list_nil(), list_nil())
+    | list_cons(x, list_nil()) => (list_cons(x, list_nil()), list_nil())
+    | list_cons(x, list_cons(y, xs)) =>
       let
-        val lesser = list0_filter<nint>(rest, lam(x) => x <= pivot)
-        val greater = list0_filter<nint>(rest, lam(x) => x > pivot)
+        val (xs1, xs2) = list_split(xs)
       in
-        list0_append<nint>(quicksort(lesser), list0_cons(pivot, quicksort(greater)))
+        (list_cons(x, xs1), list_cons(y, xs2))
       end
+  )
 
+  fun list_merge(xs: list(sint), ys: list(sint)): list(sint) =
+  (
+    case+ (xs, ys) of
+    | (list_nil(), _) => ys
+    | (_, list_nil()) => xs
+    | (list_cons(x, xs1), list_cons(y, ys1)) =>
+      if x <= y then list_cons(x, list_merge(xs1, ys))
+      else list_cons(y, list_merge(xs, ys1))
+  )
+}
 
-fun insert_helper (x: nint, ys: list0(nint)): list0(nint) =
-  case+ ys of
-  | list0_nil() => list0_cons(x, list0_nil())
-  | list0_cons(y, ys_tail) =>
-      if x <= y then 
-        list0_cons(x, ys)
-      else 
-        list0_cons(y, insert_helper(x, ys_tail))
+(* ****** ****** *)
+(*
+HX-2026-05-14:
+Selection Sort put smallest on the front
+*)
 
-fun insertsort (xs: list0(nint)): list0(nint) =
-  case+ xs of
-  | list0_nil() => list0_nil()
-  | list0_cons(x, xs_tail) => insert_helper(x, insertsort(xs_tail))
+#extern
+fun
+list_selectionsort
+(xs: list(sint)): list(sint)
 
+#implfun
+list_selectionsort(xs) =
+(
+case+ xs of
+| list_nil() => list_nil()
+| list_cons(_, _) =>
+  let
+    val (x, xs) = list_remove_min(xs)
+  in
+    list_cons(x, list_selectionsort(xs))
+  end
+) where
+{
+  fun list_remove_min(xs: list(sint)): (sint, list(sint)) =
+  (
+    case+ xs of
+    | list_nil() => (~1, list_nil()) // should not happen
+    | list_cons(x, list_nil()) => (x, list_nil())
+    | list_cons(x, xs) =>
+      let
+        val (y, xs) = list_remove_min(xs)
+      in
+        if x <= y then (x, xs) else (y, list_cons(x, xs))
+      end
+  )
+}
 
-fun bubble_pass (xs: list0(nint)): list0(nint) =
-  case+ xs of
-  | list0_nil() => list0_nil()
-  | list0_cons(x, tail1) =>
-      (case+ tail1 of
-       | list0_nil() => list0_cons(x, list0_nil())
-       | list0_cons(y, tail2) =>
-           if x > y then 
-             list0_cons(y, bubble_pass(list0_cons(x, tail2)))
-           else 
-             list0_cons(x, bubble_pass(tail1)))
+val () = printsln("\
+mergesort(1,2,3,4,5,1,2,3,4,5) = ",
+list_mergesort(list@(1,2,3,4,5)\append(list@(1,2,3,4,5))))
 
-fun bubblesort_loop (xs: list0(nint), n: int): list0(nint) =
-  if n <= 1 then 
-    xs
-  else 
-    bubblesort_loop(bubble_pass(xs), n - 1)
+val () = printsln("\
+selectionsort(1,2,3,4,5,1,2,3,4,5) = ",
+list_selectionsort(list@(1,2,3,4,5)\append(list@(1,2,3,4,5))))
 
-fun bubblesort (xs: list0(nint)): list0(nint) =
-  bubblesort_loop(xs, list0_length<nint>(xs))
+(* ****** ****** *)
+
+(* ****** ****** *)
+(*
+HX-2026-05-14:
+Merge Sort on FnList
+*)
+
+#extern
+fun
+list_mergesort
+(xs: list(sint)): list(sint)
+
+#implfun
+list_mergesort(xs) =
+(
+case+ xs of
+| list_nil() => list_nil()
+| list_cons(x, list_nil()) => list_cons(x, list_nil())
+| list_cons(_, _) =>
+  let
+    val (xs1, xs2) = list_split(xs)
+  in
+    list_merge(list_mergesort(xs1), list_mergesort(xs2))
+  end
+) where
+{
+  fun list_split(xs: list(sint)): (list(sint), list(sint)) =
+  (
+    case+ xs of
+    | list_nil() => (list_nil(), list_nil())
+    | list_cons(x, list_nil()) => (list_cons(x, list_nil()), list_nil())
+    | list_cons(x, list_cons(y, xs)) =>
+      let
+        val (xs1, xs2) = list_split(xs)
+      in
+        (list_cons(x, xs1), list_cons(y, xs2))
+      end
+  )
+
+  fun list_merge(xs: list(sint), ys: list(sint)): list(sint) =
+  (
+    case+ (xs, ys) of
+    | (list_nil(), _) => ys
+    | (_, list_nil()) => xs
+    | (list_cons(x, xs1), list_cons(y, ys1)) =>
+      if x <= y then list_cons(x, list_merge(xs1, ys))
+      else list_cons(y, list_merge(xs, ys1))
+  )
+}
+
+(* ****** ****** *)
+(*
+HX-2026-05-14:
+Selection Sort put smallest on the front
+*)
+
+#extern
+fun
+list_selectionsort
+(xs: list(sint)): list(sint)
+
+#implfun
+list_selectionsort(xs) =
+(
+case+ xs of
+| list_nil() => list_nil()
+| list_cons(_, _) =>
+  let
+    val (x, xs) = list_remove_min(xs)
+  in
+    list_cons(x, list_selectionsort(xs))
+  end
+) where
+{
+  fun list_remove_min(xs: list(sint)): (sint, list(sint)) =
+  (
+    case+ xs of
+    | list_nil() => (~1, list_nil()) // should not happen
+    | list_cons(x, list_nil()) => (x, list_nil())
+    | list_cons(x, xs) =>
+      let
+        val (y, xs) = list_remove_min(xs)
+      in
+        if x <= y then (x, xs) else (y, list_cons(x, xs))
+      end
+  )
+}
+
+val () = printsln("\
+mergesort(1,2,3,4,5,1,2,3,4,5) = ",
+list_mergesort(list@(1,2,3,4,5)\append(list@(1,2,3,4,5))))
+
+val () = printsln("\
+selectionsort(1,2,3,4,5,1,2,3,4,5) = ",
+list_selectionsort(list@(1,2,3,4,5)\append(list@(1,2,3,4,5))))
+
+(* ****** ****** *)
